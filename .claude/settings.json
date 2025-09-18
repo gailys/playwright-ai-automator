@@ -1,0 +1,10 @@
+{
+  "project": {
+    "name": "Playwright Testing Project",
+    "environment": {
+      "baseUrl": "https://www.toolsqa.com/",
+      "baseApi": "https://www.toolsqa.com/",
+      "apiDocumentation": "https://demoqa.com/swagger/"
+    }
+  }
+}

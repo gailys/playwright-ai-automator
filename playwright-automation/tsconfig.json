@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "ES2019",
+    "module": "commonjs",
+    "typeRoots": ["node_modules/@types"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "isolatedModules": false,
+    "lib": ["esnext", "dom", "DOM.Iterable", "ES2019"],
+    "baseUrl": ".",
+    "paths": {
+      "@html-reporter/*": ["./packages/html-reporter/src/*"],
+      "@protocol/*": ["./packages/protocol/src/*"],
+      "@recorder/*": ["./packages/recorder/src/*"],
+      "@trace/*": ["./packages/trace/src/*"],
+      "playwright-core/lib/*": ["./packages/playwright-core/src/*"]
+    },
+    "esModuleInterop": true,
+    "strict": true,
+    "allowJs": false,
+    "jsx": "react",
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "noImplicitOverride": true,
+    "useUnknownInCatchVariables": false
+  },
+  "compileOnSave": false,
+  "types": [ "node", "@types/node"],
+  "exclude": [
+    "packages/*/lib",
+    "packages/html-reporter",
+    "packages/playwright-ct-react",
+    "packages/playwright-ct-solid",
+    "packages/playwright-ct-svelte",
+    "packages/playwright-ct-vue",
+    "packages/playwright-ct-vue2",
+    "packages/recorder",
+    "packages/trace-viewer",
+    "packages/web",
+    "node_modules"
+  ]
+}

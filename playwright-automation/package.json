@@ -1,0 +1,51 @@
+{
+  "name": "qa-automation-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "test:fe": "npx cross-env ENV=test TEST_TYPE=fe playwright test --grep @FE --workers=8 --project=chromium --headed",
+    "test:api": "npx cross-env ENV=test TEST_TYPE=api playwright test tests/api --workers=8 --project=API",
+    "merge-html-report": "ts-node utils/reports/merge-html-report.ts",
+    "parse-json-report": "ts-node utils/reports/json-report-parser.ts",
+    "eslint:run": "npx eslint --ext .ts, --quiet .",
+    "eslint:fix": "npx eslint --fix --ext .ts, --quiet ."
+  },
+  "devDependencies": {
+    "@playwright/test": "1.49.1",
+    "cross-env": "7.0.3",
+    "dotenv": "16.4.5",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-prettier": "5.1.3",
+    "husky": "9.0.11",
+    "npm-run-all": "4.1.5",
+    "prettier": "3.3.2"
+  },
+  "dependencies": {
+    "@faker-js/faker": "8.2.0",
+    "@types/node": "18.11.18",
+    "@typescript-eslint/eslint-plugin": "5.54.0",
+    "@typescript-eslint/eslint-plugin-tslint": "5.54.0",
+    "axios": "1.7.9",
+    "date-fns": "3.6.0",
+    "eslint": "8.35.0",
+    "eslint-config-standard-with-typescript": "34.0.0",
+    "eslint-plugin-chai-expect": "3.0.0",
+    "eslint-plugin-import": "2.27.5",
+    "eslint-plugin-n": "15.6.1",
+    "eslint-plugin-promise": "6.1.1",
+    "eslint-plugin-tslint": "3.1.0",
+    "eslint-plugin-typescript-sort-keys": "2.2.0",
+    "eslint-plugin-unicorn": "45.0.2",
+    "faker": "5.5.3",
+    "log4js": "6.8.0",
+    "node-cache": "5.1.2",
+    "playwright": "1.49.1",
+    "playwright-merge-html-reports": "0.2.6",
+    "ts-node": "10.9.1",
+    "typescript": "5.1.6"
+  }
+}
