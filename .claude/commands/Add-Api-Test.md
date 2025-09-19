@@ -1,50 +1,36 @@
 ---
 name: Add-Api-Test
-description: Create comprehensive Playwright TypeScript API tests with the specialized API testing agent
+description: Convert raw Playwright API test steps into proper structure using the specialized API testing agent
 ---
 
-I need to create API tests using the Playwright API Engineer agent. Here's what I want to test:
+I have collection of Javascript API fetch steps that need to be converted into proper Playwright test structure. Here are the test steps:
 
 {{prompt}}
 
-Please use the Playwright API Engineer agent to create comprehensive TypeScript API tests that include:
+Please use the playwright-api-engineer agent to analyze these Playwright API test steps and organize them into the existing structure at `playwright-automation/tests/api`. The agent should:
 
-## Test Requirements:
-1. **Environment Integration**: Use environment variables from `playwright-automation/.env` if available:
-   - BASE_URL for the application base URL
-   - BASE_API for API endpoint base URL
-   - API_DOCUMENTATION for reference documentation
+1. **Analyze the provided API test steps** to identify:
 
-2. **Test Structure**: Create well-organized test files with:
-   - Proper imports and setup
-   - Page Object Model patterns for API endpoints
-   - Reusable utility functions
-   - Clear test descriptions and organization
+   - Which API endpoints are involved in the test
+   - What request/response data needs to be handled
+   - What authentication is required
+   - What assertions are being performed
 
-3. **API Testing Coverage**:
-   - Request/response validation
-   - Status code verification
-   - Response schema validation
-   - Error handling and edge cases
-   - Authentication flows (if applicable)
-   - Data-driven test scenarios
+2. **Create or update API helpers** in `playwright-automation/tests/api/helpers/`:
 
-4. **TypeScript Implementation**:
-   - Strong typing for API responses
-   - Interface definitions for request/response data
-   - Type-safe test utilities
-   - Proper async/await handling
+   - Create new helper classes if needed (following existing naming conventions)
+   - Add request builders and response handlers
+   - Follow the existing API testing patterns
 
-5. **Test Configuration**:
-   - Playwright configuration for API testing
-   - Environment-specific settings
-   - Test data management
-   - Reporting and debugging setup
+3. **Create or update test utilities** in `playwright-automation/tests/api/utils/`:
 
-6. **Best Practices**:
-   - Test isolation and cleanup
-   - Proper assertions and validations
-   - Performance considerations
-   - Maintainable and scalable code structure
+   - Create reusable utility functions
+   - Group related API operations into logical utilities
+   - Follow existing utility naming conventions
 
-Please analyze the test requirements and create a complete API testing solution using Playwright TypeScript with the specialized API testing expertise.
+4. **Create the final API test** in `playwright-automation/tests/api/specs/`:
+   - Convert raw API test steps into clean, structured test
+   - Use proper test structure and assertions
+   - Follow existing API test file patterns
+
+The agent will only work within the `playwright-automation/tests/api` folder and must follow the existing API testing architecture and code formatting standards.

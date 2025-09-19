@@ -3,6 +3,50 @@ import { spawn, spawnSync } from 'node:child_process';
 import inquirer from 'inquirer';
 import path from 'node:path';
 import fs from 'node:fs';
+import readline from 'node:readline';
+
+function getMultiLineInput(prompt) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      terminal: true
+    });
+
+    const lines = [];
+
+    console.log(prompt);
+    console.log('💡 Instructions:');
+    console.log('   • Paste or type your code (newlines are preserved)');
+    console.log('   • Type "DONE" on a new line and press Enter to submit');
+    console.log('   • Press Ctrl+C to cancel');
+    console.log('─'.repeat(60));
+
+    const askForLine = () => {
+      rl.question('', (line) => {
+        if (line.trim().toUpperCase() === 'DONE') {
+          rl.close();
+          const result = lines.join('\n').trim();
+          console.log('─'.repeat(60));
+          console.log('✅ Input received!');
+          resolve(result);
+          return;
+        }
+
+        lines.push(line);
+        askForLine();
+      });
+    };
+
+    askForLine();
+
+    rl.on('SIGINT', () => {
+      rl.close();
+      console.log('\n\n❌ Cancelled by user');
+      process.exit(0);
+    });
+  });
+}
 
 function detectPackageManager(cwd) {
   if (fs.existsSync(path.join(cwd, 'pnpm-lock.yaml'))) return 'pnpm';
@@ -35,6 +79,11 @@ function getClaudeCommand(argumentString) {
   return `claude "/Add-Frontend-Test ${safeArg}" --dangerously-skip-permissions`;
 }
 
+function getApiClaudeCommand(argumentString) {
+  const safeArg = argumentString.replace(/(["\\$`])/g, '\\$1');
+  return `claude "/Add-Api-Test ${safeArg}" --dangerously-skip-permissions`;
+}
+
 function getPrepareEnvironmentCommand() {
   return `claude "/Prepare-new-environment New Environment Setup: Initialize complete testing infrastructure with validation tests for configured environment variables. AUTOMATIC DELETION APPROVED - proceed without asking for confirmation." --dangerously-skip-permissions`;
 }
@@ -42,7 +91,7 @@ function getPrepareEnvironmentCommand() {
 function checkEnvironmentVariables(cwd) {
   const playwrightDir = path.join(cwd, 'playwright-automation');
   const envPath = path.join(playwrightDir, '.env');
-  const requiredVars = ['BASE_PAGE', 'BASE_API', 'API_DOCUMENTATION'];
+  const allVars = ['BASE_PAGE', 'BASE_API', 'API_DOCUMENTATION'];
 
   if (!fs.existsSync(envPath)) {
     return { needsSetup: true, existingVars: {}, noEnvFile: true };
@@ -54,13 +103,24 @@ function checkEnvironmentVariables(cwd) {
 
     envContent.split('\n').forEach(line => {
       const match = line.match(/^([A-Z_]+)=(.*)$/);
-      if (match && requiredVars.includes(match[1])) {
+      if (match && allVars.includes(match[1])) {
         existingVars[match[1]] = match[2];
       }
     });
 
-    const missingVars = requiredVars.filter(varName => !existingVars[varName]);
-    const needsSetup = missingVars.length > 0;
+    // Core variables that are always checked
+    const coreVars = ['BASE_PAGE', 'BASE_API'];
+    const missingCoreVars = coreVars.filter(varName => !existingVars[varName]);
+
+    // API_DOCUMENTATION is only required if BASE_API exists
+    const hasBaseApi = existingVars.BASE_API && existingVars.BASE_API.trim();
+    const missingApiDoc = hasBaseApi && !existingVars.API_DOCUMENTATION;
+
+    const needsSetup = missingCoreVars.length > 0 || missingApiDoc;
+    const missingVars = [...missingCoreVars];
+    if (missingApiDoc) {
+      missingVars.push('API_DOCUMENTATION');
+    }
 
     return { needsSetup, existingVars, missingVars, noEnvFile: false };
   } catch (error) {
@@ -150,27 +210,22 @@ function openInNewTab(command, cwd) {
 
 
 async function getTestArgument() {
-  const { argument } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'argument',
-      message: 'Enter test description or arguments:',
-      validate: (input) => {
-        if (!input.trim()) {
-          return 'Please enter a valid argument';
-        }
-        return true;
-      }
-    }
-  ]);
+  const argument = await getMultiLineInput('\n📝 Enter your Playwright test code or description:');
+
+  if (!argument.trim()) {
+    console.log('❌ No input provided. Please try again.');
+    return getTestArgument();
+  }
+
   return argument.trim();
 }
 
 async function getEnvironmentVariables(existingVars) {
-  const requiredVars = ['BASE_PAGE', 'BASE_API', 'API_DOCUMENTATION'];
+  const baseVars = ['BASE_PAGE', 'BASE_API'];
   const questions = [];
 
-  for (const varName of requiredVars) {
+  // First ask for BASE_PAGE and BASE_API
+  for (const varName of baseVars) {
     const existing = existingVars[varName];
     const message = existing
       ? `${varName}(${existing}) (press Enter if current is OK):`
@@ -185,13 +240,40 @@ async function getEnvironmentVariables(existingVars) {
   }
 
   const answers = await inquirer.prompt(questions);
+
+  // Only ask for API_DOCUMENTATION if BASE_API was provided
+  if (answers.BASE_API && answers.BASE_API.trim()) {
+    const existing = existingVars.API_DOCUMENTATION;
+    const message = existing
+      ? `API_DOCUMENTATION(${existing}) (press Enter if current is OK):`
+      : `API_DOCUMENTATION (required when BASE_API is provided):`;
+
+    const apiDocAnswer = await inquirer.prompt([{
+      type: 'input',
+      name: 'API_DOCUMENTATION',
+      message,
+      default: existing || '',
+      validate: (input) => {
+        if (!input || !input.trim()) {
+          return 'API_DOCUMENTATION is required when BASE_API is provided. Please enter a value.';
+        }
+        return true;
+      }
+    }]);
+
+    answers.API_DOCUMENTATION = apiDocAnswer.API_DOCUMENTATION;
+  } else {
+    // If no BASE_API, keep existing API_DOCUMENTATION value or empty
+    answers.API_DOCUMENTATION = existingVars.API_DOCUMENTATION || '';
+  }
+
   return answers;
 }
 
 function writeEnvironmentFile(cwd, variables) {
   const playwrightDir = path.join(cwd, 'playwright-automation');
   const envPath = path.join(playwrightDir, '.env');
-  const requiredVars = ['BASE_PAGE', 'BASE_API', 'API_DOCUMENTATION'];
+  const allVars = ['BASE_PAGE', 'BASE_API', 'API_DOCUMENTATION'];
 
   if (!fs.existsSync(playwrightDir)) {
     fs.mkdirSync(playwrightDir, { recursive: true });
@@ -210,7 +292,7 @@ function writeEnvironmentFile(cwd, variables) {
 
   existingLines.forEach(line => {
     const match = line.match(/^([A-Z_]+)=(.*)$/);
-    if (match && requiredVars.includes(match[1])) {
+    if (match && allVars.includes(match[1])) {
       if (variables[match[1]] && variables[match[1]].trim()) {
         updatedLines.push(`${match[1]}=${variables[match[1]]}`);
       }
@@ -220,7 +302,7 @@ function writeEnvironmentFile(cwd, variables) {
     }
   });
 
-  requiredVars.forEach(varName => {
+  allVars.forEach(varName => {
     if (!processedVars.has(varName) && variables[varName] && variables[varName].trim()) {
       updatedLines.push(`${varName}=${variables[varName]}`);
     }
@@ -272,6 +354,11 @@ async function showMainMenu() {
       name: '🧪 Add Frontend Test',
       value: 'add-frontend-test',
       short: 'Add Frontend Test'
+    });
+    choices.push({
+      name: '🔗 Add API Test',
+      value: 'add-api-test',
+      short: 'Add API Test'
     });
 
     if (envCheck.needsSetup) {
@@ -347,6 +434,22 @@ async function main() {
             console.log(`\n⚠️  ${error.message}`);
             console.log('Please try running the command manually:');
             console.log(`   ${claudeCommand}`);
+            console.log('');
+          }
+          break;
+
+        case 'add-api-test':
+          const apiArgument = await getTestArgument();
+          const apiClaudeCommand = getApiClaudeCommand(apiArgument);
+          try {
+            openInNewTab(apiClaudeCommand, cwd);
+            console.log('\n✅ Launched Claude Add-Api-Test in a new tab!');
+            console.log('💡 You can continue using this tool or close it.');
+            console.log('');
+          } catch (error) {
+            console.log(`\n⚠️  ${error.message}`);
+            console.log('Please try running the command manually:');
+            console.log(`   ${apiClaudeCommand}`);
             console.log('');
           }
           break;

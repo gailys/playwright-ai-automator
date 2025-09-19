@@ -1,61 +1,32 @@
 ---
 name: Add-Frontend-Test
-description: Create comprehensive Playwright TypeScript frontend E2E tests with the specialized frontend testing agent
+description: Convert raw Playwright test steps into proper POM structure using the specialized frontend testing agent
 ---
 
-I need to create frontend E2E tests using the Playwright Frontend Engineer agent. Here's what I want to test:
+I have Playwright test steps that need to be converted into proper Page Object Model structure. Here are the test steps:
 
 {{prompt}}
 
-Please use the Playwright Frontend Engineer agent to create comprehensive TypeScript frontend tests that include:
+Please use the playwright-frontend-engineer agent to analyze these Playwright test steps and organize them into the existing POM structure at `playwright-automation/tests/frontend`. The agent should:
 
-## Test Requirements:
-1. **Environment Integration**: Use environment variables from `playwright-automation/.env` if available:
-   - BASE_URL for the application base URL
-   - BASE_API for API endpoint base URL (for network mocking/validation)
-   - API_DOCUMENTATION for understanding API interactions
+1. **Analyze the provided test steps** to identify:
+   - Which pages are involved in the test
+   - What elements need to be interacted with
+   - What actions are being performed
 
-2. **Page Object Model**: Create maintainable test structure with:
-   - Page object classes for different application pages
-   - Reusable component objects for common UI elements
-   - Proper element selectors and locators
-   - Action methods and assertion helpers
+2. **Create or update page objects** in `playwright-automation/tests/frontend/pages/`:
+   - Create new page classes if needed (following existing naming conventions)
+   - Add element locators for all interacted elements
+   - Follow the existing BasePage pattern
 
-3. **E2E Testing Coverage**:
-   - User journey testing (login, navigation, workflows)
-   - Form interactions and validation
-   - UI component behavior testing
-   - Cross-browser compatibility considerations
-   - Responsive design testing
-   - Accessibility testing integration
+3. **Create or update methods** in `playwright-automation/tests/frontend/methods/`:
+   - Create reusable interaction methods
+   - Group related actions into logical methods
+   - Follow existing method naming conventions
 
-4. **Advanced Testing Features**:
-   - Network request interception and mocking
-   - File upload/download testing
-   - Drag and drop interactions
-   - Keyboard and mouse event simulation
-   - Cookie and local storage management
-   - Screenshot and visual regression testing
+4. **Create the final test** in `playwright-automation/tests/frontend/specs/`:
+   - Convert raw Playwright steps into clean POM-based test
+   - Use proper test structure and assertions
+   - Follow existing test file patterns
 
-5. **TypeScript Implementation**:
-   - Strong typing for page objects and test data
-   - Interface definitions for test configurations
-   - Type-safe element interactions
-   - Proper async/await patterns
-
-6. **Test Configuration**:
-   - Multi-browser testing setup (Chrome, Firefox, Safari, Edge)
-   - Mobile device emulation
-   - Parallel test execution
-   - Test reporting with screenshots/videos
-   - CI/CD integration considerations
-
-7. **Best Practices**:
-   - Test data management and cleanup
-   - Stable element selection strategies
-   - Wait strategies for dynamic content
-   - Error handling and retry mechanisms
-   - Performance testing integration
-   - Maintainable test organization
-
-Please analyze the frontend testing requirements and create a complete E2E testing solution using Playwright TypeScript with specialized frontend testing expertise.
+The agent will only work within the `playwright-automation/tests/frontend` folder and must follow the existing POM architecture and code formatting standards.
