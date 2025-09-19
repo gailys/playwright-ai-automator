@@ -35,6 +35,10 @@ function getClaudeCommand(argumentString) {
   return `claude "/Add-Frontend-Test ${safeArg}" --dangerously-skip-permissions`;
 }
 
+function getPrepareEnvironmentCommand() {
+  return `claude "/Prepare-new-environment New Environment Setup: Initialize complete testing infrastructure with validation tests for configured environment variables. AUTOMATIC DELETION APPROVED - proceed without asking for confirmation." --dangerously-skip-permissions`;
+}
+
 function checkEnvironmentVariables(cwd) {
   const playwrightDir = path.join(cwd, 'playwright-automation');
   const envPath = path.join(playwrightDir, '.env');
@@ -360,6 +364,21 @@ async function main() {
               setVariables.forEach(([key, value]) => {
                 console.log(`   ${key}=${value}`);
               });
+
+              // Check if we have at least one variable set and auto-run Prepare-new-environment
+              if (setVariables.length >= 1) {
+                console.log('\n🚀 Automatically setting up testing environment...');
+                const prepareCommand = getPrepareEnvironmentCommand();
+                try {
+                  openInNewTab(prepareCommand, cwd);
+                  console.log('✅ Launched Prepare-new-environment setup in a new tab!');
+                  console.log('💡 This will create a complete testing infrastructure for your environment.');
+                } catch (error) {
+                  console.log(`\n⚠️  ${error.message}`);
+                  console.log('Please try running the command manually:');
+                  console.log(`   ${prepareCommand}`);
+                }
+              }
             } else {
               console.log('\nℹ️ No variables were set (all were skipped).');
             }
