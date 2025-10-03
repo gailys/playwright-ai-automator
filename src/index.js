@@ -27,8 +27,6 @@ function getMultiLineInput(prompt) {
         if (line.trim().toUpperCase() === 'DONE') {
           rl.close();
           const result = lines.join('\n').trim();
-          console.log('─'.repeat(60));
-          console.log('✅ Input received!');
           resolve(result);
           return;
         }
@@ -42,7 +40,8 @@ function getMultiLineInput(prompt) {
 
     rl.on('SIGINT', () => {
       rl.close();
-      console.log('\n\n❌ Cancelled by user');
+      console.clear();
+      console.log('❌ Cancelled by user');
       process.exit(0);
     });
   });
@@ -213,6 +212,7 @@ async function getTestArgument() {
   const argument = await getMultiLineInput('\n📝 Enter your Playwright test code or description:');
 
   if (!argument.trim()) {
+    console.clear();
     console.log('❌ No input provided. Please try again.');
     return getTestArgument();
   }
@@ -411,14 +411,12 @@ async function main() {
         case 'codegen-tab':
           try {
             openInNewTab(command, cwd);
-            console.log('\n✅ Launched Playwright codegen in a new tab!');
-            console.log('💡 You can continue using this tool or close it.');
-            console.log('');
+            console.clear();
+            console.log('✅ Launched Playwright codegen in a new tab!');
           } catch (error) {
-            console.log(`\n⚠️  ${error.message}`);
-            console.log('Please try running the command manually:');
-            console.log(`   ${command}`);
-            console.log('');
+            console.clear();
+            console.log(`⚠️  ${error.message}`);
+            console.log(`Manual command: ${command}`);
           }
           break;
 
@@ -427,14 +425,12 @@ async function main() {
           const claudeCommand = getClaudeCommand(argument);
           try {
             openInNewTab(claudeCommand, cwd);
-            console.log('\n✅ Launched Claude Add-Frontend-Test in a new tab!');
-            console.log('💡 You can continue using this tool or close it.');
-            console.log('');
+            console.clear();
+            console.log('✅ Launched Claude Add-Frontend-Test in a new tab!');
           } catch (error) {
-            console.log(`\n⚠️  ${error.message}`);
-            console.log('Please try running the command manually:');
-            console.log(`   ${claudeCommand}`);
-            console.log('');
+            console.clear();
+            console.log(`⚠️  ${error.message}`);
+            console.log(`Manual command: ${claudeCommand}`);
           }
           break;
 
@@ -443,14 +439,12 @@ async function main() {
           const apiClaudeCommand = getApiClaudeCommand(apiArgument);
           try {
             openInNewTab(apiClaudeCommand, cwd);
-            console.log('\n✅ Launched Claude Add-Api-Test in a new tab!');
-            console.log('💡 You can continue using this tool or close it.');
-            console.log('');
+            console.clear();
+            console.log('✅ Launched Claude Add-Api-Test in a new tab!');
           } catch (error) {
-            console.log(`\n⚠️  ${error.message}`);
-            console.log('Please try running the command manually:');
-            console.log(`   ${apiClaudeCommand}`);
-            console.log('');
+            console.clear();
+            console.log(`⚠️  ${error.message}`);
+            console.log(`Manual command: ${apiClaudeCommand}`);
           }
           break;
 
@@ -462,37 +456,35 @@ async function main() {
             const setVariables = Object.entries(variables).filter(([key, value]) => value && value.trim());
 
             if (setVariables.length > 0) {
-              console.log('\n✅ Environment variables have been saved to playwright-automation/.env file!');
-              console.log('The following variables were set:');
-              setVariables.forEach(([key, value]) => {
-                console.log(`   ${key}=${value}`);
-              });
-
               // Check if we have at least one variable set and auto-run Prepare-new-environment
               if (setVariables.length >= 1) {
-                console.log('\n🚀 Automatically setting up testing environment...');
                 const prepareCommand = getPrepareEnvironmentCommand();
                 try {
                   openInNewTab(prepareCommand, cwd);
-                  console.log('✅ Launched Prepare-new-environment setup in a new tab!');
-                  console.log('💡 This will create a complete testing infrastructure for your environment.');
+                  console.clear();
+                  console.log('✅ Environment variables saved and launched environment setup!');
                 } catch (error) {
-                  console.log(`\n⚠️  ${error.message}`);
-                  console.log('Please try running the command manually:');
-                  console.log(`   ${prepareCommand}`);
+                  console.clear();
+                  console.log('✅ Environment variables saved!');
+                  console.log(`⚠️  Setup failed: ${error.message}`);
+                  console.log(`Manual command: ${prepareCommand}`);
                 }
+              } else {
+                console.clear();
+                console.log('✅ Environment variables saved!');
               }
             } else {
-              console.log('\nℹ️ No variables were set (all were skipped).');
+              console.clear();
+              console.log('ℹ️ No variables were set (all were skipped).');
             }
-            console.log('');
           } catch (error) {
-            console.log(`\n⚠️  Failed to save environment variables: ${error.message}`);
-            console.log('');
+            console.clear();
+            console.log(`⚠️  Failed to save environment variables: ${error.message}`);
           }
           break;
 
         default:
+          console.clear();
           console.log('❌ Invalid selection. Please try again.');
       }
     }
